@@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
     addr_t end_addr;
   } addr_rule_t;
 
-  // Generate address map
-  function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
-    addr_rule_t [AxiOut.num_rules-1:0] ret;
-    for (int i = 0; i < AxiOut.num_rules; ++i)
-      ret[i] = '{idx: AxiOut.map[i].idx,
-          start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
-    return ret;
-  endfunction
+  // Generate address map. Built with constant continuous assignments rather
+  // than a constant function: Xcelium rejects constant functions that use
+  // module-level localparams and types (xmvlog CFBADP/CFBADT/SVNSTP).
+  addr_rule_t [AxiOut.num_rules-1:0] AxiMap;
 
-  localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
+  for (genvar i = 0; i < AxiOut.num_rules; ++i) begin : gen_axi_map
+    assign AxiMap[i] = '{idx: AxiOut.map[i].idx,
+        start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
+  end
 
   // Connectivity of Xbar
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
@@ -297,16 +296,13 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Generate indices and get maps for all ports
   localparam reg_out_t  RegOut = gen_reg_out(Cfg);
 
-  // Generate Reg address map
-  function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
-    addr_rule_t [RegOut.num_rules-1:0] ret;
-    for (int i = 0; i < RegOut.num_rules; ++i)
-      ret[i] = '{idx: RegOut.map[i].idx,
-          start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
-    return ret;
-  endfunction
+  // Generate Reg address map (constant assignments; see AxiMap above)
+  addr_rule_t [RegOut.num_rules-1:0] RegMap;
 
-  localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
+  for (genvar i = 0; i < RegOut.num_rules; ++i) begin : gen_reg_map
+    assign RegMap[i] = '{idx: RegOut.map[i].idx,
+        start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
+  end
 
   logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
 
