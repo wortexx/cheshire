@@ -73,6 +73,8 @@ package cheshire_pkg;
     // control the CIE region's size and whether it abuts with the top or bottom of this range.
     doub_bt Cva6ExtCieLength;
     bit     Cva6ExtCieOnTop;
+    // Enable core 0's CV-X-IF coprocessor port, exposed as `cvxif_*` on `cheshire_soc` (newt).
+    bit     Cva6CvxifEn;
     // Hart parameters
     bit [MaxCoresWidth-1:0] NumCores;
     doub_bt NumExtIrqHarts;
@@ -504,7 +506,7 @@ package cheshire_pkg;
       RVH                   : 1,
       RVZCB                 : 1,
       XFVec                 : 0,
-      CvxifEn               : 0,
+      CvxifEn               : cfg.Cva6CvxifEn,
       ZiCondExtEn           : 1,
       RVSCLIC               : cfg.Clic,
       RVF                   : 1,
@@ -567,6 +569,7 @@ package cheshire_pkg;
     Cva6NrPMPEntries  : 0,
     Cva6ExtCieLength  : 'h2000_0000,  // [0x2.., 0x4..) is CIE, [0x4.., 0x8..) is non-CIE
     Cva6ExtCieOnTop   : 0,
+    Cva6CvxifEn       : 0,
     // Harts
     NumCores          : 1,
     CoreMaxTxns       : 8,

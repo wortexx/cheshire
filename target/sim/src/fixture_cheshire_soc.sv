@@ -142,7 +142,9 @@ module fixture_cheshire_soc #(
     .usb_dm_oe_o        ( ),
     .usb_dp_i           ( '0 ),
     .usb_dp_o           ( ),
-    .usb_dp_oe_o        ( )
+    .usb_dp_oe_o        ( ),
+    .cvxif_req_o        ( ),
+    .cvxif_resp_i       ( '0 )
   );
 
   ////////////////////////

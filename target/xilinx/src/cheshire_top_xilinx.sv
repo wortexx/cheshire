@@ -569,7 +569,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .usb_dm_oe_o,
     .usb_dp_i,
     .usb_dp_o,
-    .usb_dp_oe_o
+    .usb_dp_oe_o,
+    .cvxif_req_o        ( ),
+    .cvxif_resp_i       ( '0 )
   );
 
 endmodule

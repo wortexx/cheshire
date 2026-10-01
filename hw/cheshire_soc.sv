@@ -105,7 +105,11 @@ module cheshire_soc import cheshire_pkg::*; #(
   output logic [UsbNumPorts-1:0] usb_dm_oe_o,
   input  logic [UsbNumPorts-1:0] usb_dp_i,
   output logic [UsbNumPorts-1:0] usb_dp_o,
-  output logic [UsbNumPorts-1:0] usb_dp_oe_o
+  output logic [UsbNumPorts-1:0] usb_dp_oe_o,
+  // CV-X-IF coprocessor port of core 0 (newt). Tie `cvxif_resp_i` to '0
+  // and leave `cvxif_req_o` open to keep the core's CV-X-IF unused.
+  output cvxif_pkg::cvxif_req_t  cvxif_req_o,
+  input  cvxif_pkg::cvxif_resp_t cvxif_resp_i
 );
 
   `include "axi/typedef.svh"
@@ -587,6 +591,17 @@ module cheshire_soc import cheshire_pkg::*; #(
     axi_cva6_req_t core_out_req, core_ur_req;
     axi_cva6_rsp_t core_out_rsp, core_ur_rsp;
 
+    // CV-X-IF: only core 0 is exposed; further cores keep it tied off.
+    cvxif_pkg::cvxif_req_t  core_cvxif_req;
+    cvxif_pkg::cvxif_resp_t core_cvxif_rsp;
+
+    if (i == 0) begin : gen_cvxif_ext
+      assign cvxif_req_o    = core_cvxif_req;
+      assign core_cvxif_rsp = cvxif_resp_i;
+    end else begin : gen_cvxif_tie
+      assign core_cvxif_rsp = '0;
+    end
+
     // CLIC interface
     logic clic_irq_valid, clic_irq_ready;
     logic clic_irq_kill_req, clic_irq_kill_ack;
@@ -622,8 +637,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
       .rvfi_probes_o    ( ),
-      .cvxif_req_o      ( ),
-      .cvxif_resp_i     ( '0 ),
+      .cvxif_req_o      ( core_cvxif_req ),
+      .cvxif_resp_i     ( core_cvxif_rsp ),
       .noc_req_o        ( core_out_req ),
       .noc_resp_i       ( core_out_rsp )
     );
